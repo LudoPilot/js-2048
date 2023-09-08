@@ -23,10 +23,51 @@ document.addEventListener('DOMContentLoaded', () => {
 		let randomNumber = Math.floor(Math.random() * squares.length)
 		if (squares[randomNumber].innerHTML == 0) {
 			squares[randomNumber].innerHTML = 2
+			checkForGameOver()
 		} else generate()
 	}
 
-	// group the tiles 4 by 4 
+	function moveDown() {
+		for (let i = 0; i < 4; i++) {
+			let totalOne = squares[i].innerHTML
+			let totalTwo = squares[i+width].innerHTML
+			let totalThree = squares[i+(width*2)].innerHTML
+			let totalFour = squares[i+(width*3)].innerHTML
+			let column = [parseInt(totalOne), parseInt(totalTwo), parseInt(totalThree), parseInt(totalFour)]
+
+			let filteredColumn = column.filter(num => num)
+			let missing = 4 -filteredColumn.length
+			let zeros = Array(missing).fill(0)
+			let newColumn = zeros.concat(filteredColumn)
+
+			squares[i].innerHTML = newColumn[0]
+			squares[i+width].innerHTML = newColumn[1]
+			squares[i+(width*2)].innerHTML = newColumn[2]
+			squares[i+(width*3)].innerHTML = newColumn[3]
+		}
+	}
+
+	function moveUp() {
+		for (let i = 0; i < 4; i++) {
+			let totalOne = squares[i].innerHTML
+			let totalTwo = squares[i+width].innerHTML
+			let totalThree = squares[i+(width*2)].innerHTML
+			let totalFour = squares[i+(width*3)].innerHTML
+			let column = [parseInt(totalOne), parseInt(totalTwo), parseInt(totalThree), parseInt(totalFour)]
+
+			let filteredColumn = column.filter(num => num)
+			let missing = 4 -filteredColumn.length
+			let zeros = Array(missing).fill(0)
+			let newColumn = filteredColumn.concat(zeros)
+
+			squares[i].innerHTML = newColumn[0]
+			squares[i+width].innerHTML = newColumn[1]
+			squares[i+(width*2)].innerHTML = newColumn[2]
+			squares[i+(width*3)].innerHTML = newColumn[3]
+		}
+	}
+
+	// group the tiles 4 by 4 and move to the right
 	function moveRight() {
 		for (let i = 0; i < 16; i++) {
 			if (i % 4 === 0) {
@@ -36,9 +77,125 @@ document.addEventListener('DOMContentLoaded', () => {
 				let totalFour = squares[i+3].innerHTML
 				let row = [parseInt(totalOne), parseInt(totalTwo), parseInt(totalThree), parseInt(totalFour)]
 
-				console.log(row)
+				let filteredRow = row.filter(num => num)
+				let missing = 4 - filteredRow.length
+				let zeros = Array(missing).fill(0)
+				let newRow = zeros.concat(filteredRow)
+
+				squares[i].innerHTML = newRow[0]
+				squares[i+1].innerHTML = newRow[1]
+				squares[i+2].innerHTML = newRow[2]
+				squares[i+3].innerHTML = newRow[3]
 			}
 		}
 	}
-	moveRight()
+	//moveRight()
+
+	function moveLeft() {
+		for (let i = 0; i < 16; i++) {
+			if (i % 4 === 0) {
+				let totalOne = squares[i].innerHTML
+				let totalTwo = squares[i+1].innerHTML
+				let totalThree = squares[i+2].innerHTML
+				let totalFour = squares[i+3].innerHTML
+				let row = [parseInt(totalOne), parseInt(totalTwo), parseInt(totalThree), parseInt(totalFour)]
+
+				let filteredRow = row.filter(num => num)
+				let missing = 4 - filteredRow.length
+				let zeros = Array(missing).fill(0)
+				let newRow = filteredRow.concat(zeros)
+
+				squares[i].innerHTML = newRow[0]
+				squares[i+1].innerHTML = newRow[1]
+				squares[i+2].innerHTML = newRow[2]
+				squares[i+3].innerHTML = newRow[3]
+			}
+		}
+	}
+
+	function combineRows() {
+		for (let i = 0; i < 15; i++) {
+			if (squares[i].innerHTML === squares[i+1].innerHTML) {
+				let combinedTotal = parseInt(squares[i].innerHTML + squares) + parseInt(squares[i+1].innerHTML)
+				squares[i].innerHTML = combinedTotal
+				squares[i+1].innerHTML = 0
+			}			
+		}
+		checkForWin()
+	}
+
+	function combineColumns() {
+		for (let i = 0; i < 12; i++) {
+			if (squares[i].innerHTML === squares[i+width].innerHTML) {
+				let combinedTotal = parseInt(squares[i].innerHTML + squares) + parseInt(squares[i+width].innerHTML)
+				squares[i].innerHTML = combinedTotal
+				squares[i+width].innerHTML = 0
+			}			
+		}
+		checkForWin()
+	}
+
+	// Assign keys
+	function control(e) {
+		if(e.keyCode === 39) {
+			keyRight()
+		} else if (e.keyCode === 37) {
+			keyLeft()
+		} else if (e.keyCode === 38) {
+			keyUp()
+		} else if (e.keyCode === 40) {
+			keyDown()
+		}
+	}
+	document.addEventListener('keyup', control)
+
+	function keyRight() {
+		moveRight()
+		combineRows()
+		moveRight()
+		generate()
+	}
+
+	function keyLeft() {
+		moveLeft()
+		combineRows()
+		moveLeft()
+		generate()
+	}
+
+	function keyDown() {
+		moveDown()
+		combineColumns()
+		moveDown()
+		generate()
+	}
+
+	function keyUp() {
+		moveUp()
+		combineColumns()
+		moveUp()
+		generate()
+	}
+
+	function checkForWin() {
+		for (let i=0; i < squares.length; i++) {
+			if (squares[i].innerHTML == 2048) {
+				resultDisplay.innerHTML = 'You win'
+				document.removeEventListener('keyup', control)
+			}
+		}
+	}
+
+	function checkForGameOver() {
+		let zeros = 0
+		for (let i = 0; i < squares.length; i++) {
+			if (squares[i].innerHTML == 0) {
+				zeros++
+			}			
+		}
+		if (zeros === 0) {
+			resultDisplay.innerHTML = 'Game over'
+			document.removeEventListener('key', control)
+		}
+	}
 })
